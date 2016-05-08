@@ -20,6 +20,24 @@ class JceSpider(scrapy.Spider):
             province_block = response.css(province_block_id)
             rows = province_block.css('table.tg tr')
             for row in rows:
+                row_text = str.join('', row.css('::text').extract())
+
+                if 'provincia' in row_text.lower():
+                    province_name = row_text.lower().replace('provincia :', '')
+                    continue
+
+                if 'circ' in row_text.lower():
+                    province_name = row_text.lower().replace('provincia :', '')
+                    continue
+
+                if 'senador' in row_text.lower():
+                    position = "senador"
+                    continue
+
+                if 'diputado' in row_text.lower():
+                    position = "diputado"
+                    continue
+
                 if row.css('.tg-5mgg'):
                     party_header = row.css('.tg-5mgg')
                     party_header_colspan = str.join('', party_header.css("::attr('colspan')").extract())
@@ -30,24 +48,14 @@ class JceSpider(scrapy.Spider):
                         party = str.join('', party_header.css('::text').extract())
                     continue
 
-                row_text = str.join('', row.css('::text').extract())
 
-                if 'provincia' in row_text.lower():
-                    province_name = row_text.replace('PROVINCIA :', '')
-                    continue
-                if 'senador' in row_text.lower():
-                    position = "senador"
-                    continue
-                if 'diputado' in row_text.lower():
-                    position = "diputado"
-                    continue
 
                 candidate_name = row_text
                 print province_name
                 print party
                 print position
                 print candidate_name
-                yield self.create_item(province_name.strip(), party.strip(), position.strip(), candidate_name.strip())
+                yield self.create_item(province_name, party, position, candidate_name)
 
     def create_item(self, province_name, party, position, candidate_name):
 
